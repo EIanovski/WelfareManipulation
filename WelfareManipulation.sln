@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1585
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WelfareManipulation", "WelfareManipulation\WelfareManipulation.csproj", "{80BAFBC8-9055-46BE-BC06-F187D8046C93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{45660DF2-21CC-470E-90A5-F54FB83E29DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{80BAFBC8-9055-46BE-BC06-F187D8046C93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80BAFBC8-9055-46BE-BC06-F187D8046C93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80BAFBC8-9055-46BE-BC06-F187D8046C93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80BAFBC8-9055-46BE-BC06-F187D8046C93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45660DF2-21CC-470E-90A5-F54FB83E29DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45660DF2-21CC-470E-90A5-F54FB83E29DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45660DF2-21CC-470E-90A5-F54FB83E29DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45660DF2-21CC-470E-90A5-F54FB83E29DB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3B8357D5-B098-4BE8-AD6F-E14D27332251}
+	EndGlobalSection
+EndGlobal
