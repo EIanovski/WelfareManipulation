@@ -1,6 +1,6 @@
 # WelfareManipulation
 Supporting code for the paper "Welfare effects of strategic voting under scoring rules"
-link to paper goes here
+(https://arxiv.org/abs/2204.10897)
 
 ## I want to see the results
 The notebook "Results interface.ipynb" visualises all the studied scenarios. Open locally or in Colab, as is convenient. The data used is in the file "results.zip". To use with the notebook, upload to Colab or Google Drive, or if using locally modify the path to the data in the first cell of the notebook accordingly.
