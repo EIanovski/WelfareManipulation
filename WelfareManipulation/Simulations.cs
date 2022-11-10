@@ -61,7 +61,11 @@ namespace WelfareManipulation
 					}
 
 					int winner = votingRule.FindWinner(p);
-					return subtotal;
+                    for (int j = 0; j < numberOfUtilities; j++)
+                    {
+                        subtotal[j] += utilities[j].UtilityFunction(p, winner);
+                    }
+                    return subtotal;
 				},
 					(subtotal) =>
 					{

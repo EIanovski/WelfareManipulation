@@ -88,7 +88,7 @@ namespace WelfareManipulation
 				})
 			);
 
-		public string Name;
+        public string Name;
 
 		public Func<int, int, Profile> GenerateProfile;
 
@@ -96,6 +96,11 @@ namespace WelfareManipulation
 		{
 			Name = name;
 			GenerateProfile = generateProfile;
+		}
+
+		public static StatisticalCulture GetConstantCulture(Profile p)
+		{
+			return new StatisticalCulture("ConstantCulture", (n, m) => p);
 		}
 	}
 }

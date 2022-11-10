@@ -23,9 +23,58 @@ namespace Tests
 			);
 			Assert.AreEqual(1000, x);
 		}
-	}
 
-	[TestClass]
+		[TestMethod]
+		public void TestUtilitiySeriesUnanimous()
+		{
+			Profile p = new Profile(
+				new int[,]
+				{
+					{ 0, 1, 2 },
+                    { 0, 1, 2 },
+                    { 0, 1, 2 }
+                }
+				);
+			string[] filenames;
+            Dictionary<int, double>[] utilities = Simulations.GenerateUtilitySeries(
+				10,
+				3,
+				Enumerable.Range(3,1),
+				StatisticalCulture.GetConstantCulture(p),
+				new UtilityMeasure[] {UtilityMeasure.BordaUtility},
+				Program.BordaSincere,
+				Simulations.AxisNames.Voters,
+				out filenames);
+			Assert.AreEqual(100, utilities[0][3]);
+        }
+
+        [TestMethod]
+        public void TestUtilitiySeriesDissenting()
+        {
+            Profile p = new Profile(
+                new int[,]
+                {
+                    { 2, 1, 0 },
+                    { 0, 1, 2 },
+                    { 0, 1, 2 }
+                }
+                );
+            string[] filenames;
+            Dictionary<int, double>[] utilities = Simulations.GenerateUtilitySeries(
+                10,
+                3,
+                Enumerable.Range(3, 1),
+                StatisticalCulture.GetConstantCulture(p),
+                new UtilityMeasure[] { UtilityMeasure.BordaUtility },
+                Program.BordaSincere,
+                Simulations.AxisNames.Voters,
+                out filenames);
+			double welfare = (40.0 / 60) * 100;
+            Assert.AreEqual(welfare, utilities[0][3]);
+        }
+    }
+
+    [TestClass]
 	public class ProfileTests
 	{
 		[TestMethod]

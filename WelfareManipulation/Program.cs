@@ -22,8 +22,8 @@ namespace WelfareManipulation
 			 * value within a range. Here you uncomment the parameter to fix, enter the value
 			 * to fix it at, and the range in which to vary the other parameter.
 			 */
-			Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Candidates;
-			//Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Voters;
+			//Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Candidates;
+			Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Voters;
 			int numberOfFixedAxis = 10;
 			IEnumerable<int> variableAxisRange = Enumerable.Range(3, 98);
 
@@ -36,10 +36,10 @@ namespace WelfareManipulation
 			 * Comment out the utilities you're not interested in.
 			 */
 			UtilityMeasure[] utilities = new UtilityMeasure[] {
-				BordaUtility,
-				RawlsUtility,
-				NashUtility
-			};
+                UtilityMeasure.BordaUtility,
+                UtilityMeasure.RawlsUtility,
+                UtilityMeasure.NashUtility
+            };
 
 			/*
 			 * Uncomment the culture you want to draw profiles from. 
@@ -59,21 +59,23 @@ namespace WelfareManipulation
 			 * Comment out the voting functions you are not interested in.
 			 */
 			VotingFunctions.VotingRule[] votingFunctions = {
-				BordaSincere, BordaManip,
-				PluralitySincere, PluralityManip,
-				Geometric0p5Sincere, Geometric0p5Manip,
-				Geometric0p65Sincere, Geometric0p65Manip,
-				Geometric0p8Sincere, Geometric0p8Manip,
-				Geometric1p2Sincere, Geometric1p2Manip,
-				Geometric1p5Sincere, Geometric1p5Manip,
-				Geometric2Sincere, Geometric2Manip,
-				FiveApprovalSincere, FiveApprovalManip,
-				FiveBordaSincere, FiveBordaManip,
-				HalfApprovalSincere, HalfApprovalManip,
-				HalfBordaSincere, HalfBordaManip,
-				QuarterApprovalSincere, QuarterApprovalManip,
-				QuarterBordaSincere, QuarterBordaManip,
-				NashSincere, NashManip
+				//BordaSincere, BordaManip,
+				//PluralitySincere, PluralityManip,
+				//Geometric0p5Sincere, Geometric0p5Manip,
+				//Geometric0p65Sincere, Geometric0p65Manip,
+				//Geometric0p8Sincere, Geometric0p8Manip,
+				//Geometric1p2Sincere, Geometric1p2Manip,
+				//Geometric1p5Sincere, Geometric1p5Manip,
+				//Geometric2Sincere, Geometric2Manip,
+				//FiveApprovalSincere, FiveApprovalManip,
+				//FiveBordaSincere, FiveBordaManip,
+				//HalfApprovalSincere, HalfApprovalManip,
+				//HalfBordaSincere, HalfBordaManip,
+				//QuarterApprovalSincere, QuarterApprovalManip,
+				//QuarterBordaSincere, QuarterBordaManip,
+				//NashSincere, NashManip,
+				GenAntipSincere, GenAntipManip,
+				//GenPlurSincere, GenPlurManip
 			};
 
 			/*
@@ -107,15 +109,7 @@ namespace WelfareManipulation
 		}
 
 
-		public static UtilityMeasure BordaUtility =
-			new UtilityMeasure("Borda_utility",
-				(profile, winner) => profile.NormalisedBordaUtility(winner));
-		public static UtilityMeasure RawlsUtility =
-			new UtilityMeasure("Rawls_utility",
-				(profile, winner) => profile.NormalisedRawlsUtility(winner));
-		public static UtilityMeasure NashUtility =
-			new UtilityMeasure("Nash_utility",
-				(profile, winner) => profile.NormalisedNashUtility(winner));
+		
 
 		public static VotingFunctions.VotingRule BordaSincere = new VotingFunctions.VotingRule(
 			"BordaSincere",
@@ -225,7 +219,31 @@ namespace WelfareManipulation
 				profile,
 				VotingFunctions.GenerateGeometricVector(profile.NumberOfCandidates, 0.5)));
 
-		public static VotingFunctions.VotingRule FiveBordaSincere = new VotingFunctions.VotingRule(
+        public static VotingFunctions.VotingRule GenAntipSincere = new VotingFunctions.VotingRule(
+            "GenAntipSincere",
+            profile => VotingFunctions.FindUniqueScoringWinner(
+                profile,
+                VotingFunctions.GenerateGeometricVector(profile.NumberOfCandidates, 1.0/ profile.NumberOfVoters)));
+
+        public static VotingFunctions.VotingRule GenAntipManip = new VotingFunctions.VotingRule(
+            "GenAntipManip",
+            profile => Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                VotingFunctions.GenerateGeometricVector(profile.NumberOfCandidates, 1.0 / profile.NumberOfVoters)));
+
+        public static VotingFunctions.VotingRule GenPlurSincere = new VotingFunctions.VotingRule(
+            "GenPlurSincere",
+            profile => VotingFunctions.FindUniqueScoringWinner(
+                profile,
+                VotingFunctions.GenerateGeometricVector(profile.NumberOfCandidates, profile.NumberOfVoters)));
+
+        public static VotingFunctions.VotingRule GenPlurManip = new VotingFunctions.VotingRule(
+            "GenPlurManip",
+            profile => Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                VotingFunctions.GenerateGeometricVector(profile.NumberOfCandidates, profile.NumberOfVoters)));
+
+        public static VotingFunctions.VotingRule FiveBordaSincere = new VotingFunctions.VotingRule(
 			"5BordaSincere",
 			profile => VotingFunctions.FindUniqueScoringWinner(
 				profile,
