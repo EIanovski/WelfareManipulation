@@ -29,8 +29,69 @@ namespace WelfareManipulation
 		}
 
 		private int[,] _profile;
+		private int[,] _tournamentMatrix = null;
 
-		public int AgentsIthChoice(int agent, int i)
+		public int[] GetVoter(int voterNumber)
+		{
+			return Enumerable.Range(0, NumberOfCandidates)
+					.Select(x => _profile[voterNumber, x])
+					.ToArray();
+		}
+
+		internal int VoterIRanks(int voter, int candidate)
+		{
+			for (int i = 0; i < NumberOfCandidates; i++)
+			{
+				if (AgentsIthChoice(voter, i) == candidate)
+				{
+					return i;
+				}
+			}
+			throw new Exception("Voter " + voter + " does not have candidate " + candidate + " in ranking");
+		}
+
+		internal void AddOrRemoveTournamentMatrixEntry(int voter, IEnumerable<int> newPrefs = null)
+		{
+			HashSet<int> lowSet = new HashSet<int>(Candidates);
+			bool removingPrefs = newPrefs == null;
+            IEnumerable<int> prefs = removingPrefs ? GetVoter(voter) : newPrefs;
+            foreach (int candidate in prefs)
+            {
+                lowSet.Remove(candidate);
+                foreach (int lowCandidate in lowSet)
+                {
+					if (removingPrefs)
+					{
+                        _tournamentMatrix[candidate, lowCandidate]--;
+                    } else
+					{
+                        _tournamentMatrix[candidate, lowCandidate]++;
+                    }
+                }
+            }
+        }
+
+		private void UpdateTournamentMatrix(int voter, IEnumerable<int> newPrefs)
+		{
+			AddOrRemoveTournamentMatrixEntry(voter);
+			AddOrRemoveTournamentMatrixEntry(voter, newPrefs);
+        }
+
+        public void SetVoter(int voterNumber, IEnumerable<int> newPrefs)
+        {
+            if (_tournamentMatrix != null)
+            {
+                UpdateTournamentMatrix(voterNumber, newPrefs);
+            }
+            int i = 0;
+            foreach (int candidate in newPrefs)
+            {
+                _profile[voterNumber, i] = candidate;
+                i++;
+            }
+        }
+
+        public int AgentsIthChoice(int agent, int i)
 		{
 			return _profile[agent, i];
 		}
@@ -51,7 +112,56 @@ namespace WelfareManipulation
 			throw new ArgumentException("No such candidates");
 		}
 
-		public Profile(int[,] preferenceMatrix)
+        public int HowManyPrefer(int firstCandidate, int secondCandidate)
+        {
+            if (_tournamentMatrix == null)
+            {
+                BuildTournamentMatrix();
+            }
+            return _tournamentMatrix[firstCandidate, secondCandidate];
+        }
+
+        private void BuildTournamentMatrix()
+        {
+            _tournamentMatrix = new int[NumberOfCandidates, NumberOfCandidates];
+            for (int agent = 0; agent < NumberOfVoters; agent++)
+            {
+                HashSet<int> unseenCandidates = new HashSet<int>(Candidates);
+                for (int candidateIndex = 0; candidateIndex < NumberOfCandidates; candidateIndex++)
+                {
+                    int candidate = AgentsIthChoice(agent, candidateIndex);
+                    unseenCandidates.Remove(candidate);
+                    foreach (int worseCandidate in unseenCandidates)
+                    {
+                        _tournamentMatrix[candidate, worseCandidate]++;
+                    }
+                }
+            }
+        }
+
+
+        public double CopelandScore(int candidate, double scoreForTies = 0.5)
+        {
+            double score = 0;
+            foreach (int otherCandidate in Candidates)
+            {
+                if (otherCandidate != candidate)
+                {
+                    if (HowManyPrefer(candidate, otherCandidate) > NumberOfVoters / 2.0)
+                    {
+                        score++;
+                    }
+                    if (HowManyPrefer(candidate, otherCandidate) == NumberOfVoters / 2.0)
+                    {
+                        score += scoreForTies;
+                    }
+                }
+            }
+            return score;
+        }
+
+
+        public Profile(int[,] preferenceMatrix)
 		{
 			NumberOfVoters = preferenceMatrix.GetLength(0);
 			NumberOfCandidates = preferenceMatrix.GetLength(1);

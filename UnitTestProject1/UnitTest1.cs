@@ -75,9 +75,132 @@ namespace Tests
     }
 
     [TestClass]
+    public class CondorcetTests
+    {
+        [TestMethod]
+        public void TestCopelandNoTies()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2, 3, 4 },
+                    { 0, 1, 2, 3, 4 },
+                    { 0, 1, 2, 3, 4 },
+                    { 0, 1, 2, 3, 4 },
+                    { 4, 1, 2, 3, 0 },
+                    { 4, 1, 2, 3, 0 },
+                    { 3, 1, 4, 0, 2 },
+                    { 3, 1, 4, 0, 2 },
+                    { 3, 1, 4, 0, 2 },
+                    { 4, 2, 1, 3, 0 },
+                    { 4, 2, 1, 3, 0 },
+                    { 0, 3, 4, 1, 2 },
+                    { 0, 3, 4, 1, 2 },
+                    { 0, 3, 4, 1, 2 },
+                    { 3, 4, 0, 1, 2 },
+                });
+            Assert.AreEqual(4, VotingFunctions.FindUniqueCopelandWinner(profile));
+        }
+
+        [TestMethod]
+        public void TestCopelandTies()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2, 3,5, 4 },
+                    { 0, 1, 2, 3,5, 4 },
+                    { 0, 1, 2, 3,5, 4 },
+                    { 0, 1, 2, 3,5, 4 },
+                    { 4, 1, 2, 3,5, 0 },
+                    { 4, 1, 2, 3,5, 0 },
+                    { 3,5, 1, 4, 0, 2 },
+                    { 3,5, 1, 4, 0, 2 },
+                    { 3,5, 1, 4, 0, 2 },
+                    { 4, 2, 1, 3,5, 0 },
+                    { 4, 2, 1, 3,5, 0 },
+                    { 0, 3,5, 4, 1, 2 },
+                    { 0, 3,5, 4, 1, 2 },
+                    { 0, 3,5, 4, 1, 2 },
+                    { 3,5, 4, 0, 1, 2 },
+                });
+            Assert.AreEqual(1, VotingFunctions.FindUniqueCopelandWinner(profile));
+        }
+
+        [TestMethod]
+        public void CopelandScoresOdd()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+                    { 2, 0, 1, 3, 4, 5, 6, 7, 8, 9 },
+                    { 4, 5, 6, 7, 8, 9, 3, 2, 1, 0 }
+                });
+            Assert.AreEqual(8, profile.CopelandScore(0));
+            Assert.AreEqual(7, profile.CopelandScore(1));
+            Assert.AreEqual(9, profile.CopelandScore(2));
+            Assert.AreEqual(6, profile.CopelandScore(3));
+            Assert.AreEqual(5, profile.CopelandScore(4));
+            Assert.AreEqual(4, profile.CopelandScore(5));
+            Assert.AreEqual(3, profile.CopelandScore(6));
+            Assert.AreEqual(2, profile.CopelandScore(7));
+            Assert.AreEqual(1, profile.CopelandScore(8));
+            Assert.AreEqual(0, profile.CopelandScore(9));
+        }
+
+        [TestMethod]
+        public void CopelandScoresEven()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2 },
+                    { 0, 1, 2 },
+                    { 1, 2, 0 },
+                    { 2, 0, 1 }
+                });
+            Assert.AreEqual(1.5, profile.CopelandScore(0));
+            Assert.AreEqual(1, profile.CopelandScore(1));
+            Assert.AreEqual(0.5, profile.CopelandScore(2));
+        }
+    }
+
+
+    [TestClass]
 	public class ProfileTests
 	{
-		[TestMethod]
+        [TestMethod]
+        public void TournamentMatrix()
+        {
+            Profile profile = new Profile(new int[,] { { 0, 1, 2, 3, 4, 5, 6 }, { 6, 5, 4, 3, 2, 1, 0 }, { 4, 3, 2, 5, 6, 0, 1 } });
+
+            foreach (int i in profile.Candidates)
+            {
+                foreach (int j in profile.Candidates)
+                {
+                    if (i != j)
+                    {
+                        Assert.AreEqual(profile.HowManyPrefer(i, j) + profile.HowManyPrefer(j, i), profile.NumberOfVoters);
+                    }
+                }
+            }
+
+            Assert.AreEqual(profile.HowManyPrefer(0, 1), 2);
+            Assert.AreEqual(profile.HowManyPrefer(6, 5), 1);
+        }
+        [TestMethod]
+        public void TournamentMatrixUpdated()
+        {
+            Profile profile = new Profile(new int[,] {
+                { 0, 1, 2, 3, 4, 5, 6 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+                { 4, 3, 2, 5, 6, 0, 1 } });
+
+            Assert.AreEqual(profile.HowManyPrefer(0, 1), 2);
+            Assert.AreEqual(profile.HowManyPrefer(6, 5), 1);
+
+            profile.SetVoter(0, new int[] { 6, 5, 4, 3, 2, 1, 0 });
+            Assert.AreEqual(profile.HowManyPrefer(0, 1), 1);
+            Assert.AreEqual(profile.HowManyPrefer(6, 5), 2);
+        }
+        [TestMethod]
 		public void ICProfileRightDimensions()
 		{
 			int numberOfAgents = 3;
@@ -93,7 +216,29 @@ namespace Tests
 			Assert.AreEqual(prof.NumberOfVoters, numberOfAgents);
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public void TestGetRankOfCandidate()
+        {
+            int[,] profileArray = { { 0, 1, 2, 3 }, { 1, 2, 0, 3 }, { 2, 0, 1, 3 } };
+            Profile profile = new Profile(profileArray);
+
+            Assert.AreEqual(0, profile.VoterIRanks(0, 0));
+            Assert.AreEqual(1, profile.VoterIRanks(0, 1));
+            Assert.AreEqual(2, profile.VoterIRanks(0, 2));
+            Assert.AreEqual(3, profile.VoterIRanks(0, 3));
+
+            Assert.AreEqual(2, profile.VoterIRanks(1, 0));
+            Assert.AreEqual(0, profile.VoterIRanks(1, 1));
+            Assert.AreEqual(1, profile.VoterIRanks(1, 2));
+            Assert.AreEqual(3, profile.VoterIRanks(1, 3));
+
+            Assert.AreEqual(1, profile.VoterIRanks(2, 0));
+            Assert.AreEqual(2, profile.VoterIRanks(2, 1));
+            Assert.AreEqual(0, profile.VoterIRanks(2, 2));
+            Assert.AreEqual(3, profile.VoterIRanks(2, 3));
+        }
+
+        [TestMethod]
 		public void EuclideanProfileRightDimensions()
 		{
 			int numberOfAgents = 3;
@@ -467,176 +612,413 @@ namespace Tests
 
 	}
 
-	[TestClass]
-	public class ManipulationTests
-	{
-		[TestMethod]
-		public void TestCandidateOrdering()
-		{
-			var scores = new Dictionary<int, double> {
-				{0, 2 },
-				{1, 0 },
-				{2, -1 },
-				{3, 0 },
-				{4, 5 },
-				{5, 6 }
-			};
-			List<int> candidates = new List<int> { 0, 1, 2, 3, 4, 5 };
-			Manipulation.OrderCandidatesByAscendingScore(candidates, scores);
+    [TestClass]
+    public class ManipulationTests
+    {
+        [TestMethod]
+        public void TestCandidateOrdering()
+        {
+            var scores = new Dictionary<int, double> {
+                {0, 2 },
+                {1, 0 },
+                {2, -1 },
+                {3, 0 },
+                {4, 5 },
+                {5, 6 }
+            };
+            List<int> candidates = new List<int> { 0, 1, 2, 3, 4, 5 };
+            Manipulation.OrderCandidatesByAscendingScore(candidates, scores);
 
-			Assert.AreEqual(2, candidates.ElementAt(0));
-			Assert.AreEqual(3, candidates.ElementAt(1));
-			Assert.AreEqual(1, candidates.ElementAt(2));
-			Assert.AreEqual(0, candidates.ElementAt(3));
-			Assert.AreEqual(4, candidates.ElementAt(4));
-			Assert.AreEqual(5, candidates.ElementAt(5));
-		}
+            Assert.AreEqual(2, candidates.ElementAt(0));
+            Assert.AreEqual(3, candidates.ElementAt(1));
+            Assert.AreEqual(1, candidates.ElementAt(2));
+            Assert.AreEqual(0, candidates.ElementAt(3));
+            Assert.AreEqual(4, candidates.ElementAt(4));
+            Assert.AreEqual(5, candidates.ElementAt(5));
+        }
 
-		[TestMethod]
-		public void TestTwoApprovalManipulation()
-		{
-			Profile p = new Profile(new int[,] {
-				{ 0, 3, 2, 1 },
-				{0, 1, 3, 2 },
-				{0, 1, 2, 3 },
-				{2, 1, 0, 3 },
-				{2, 1, 3, 0},
-				{3, 2, 1, 0}
-			});
-			double[] twoApproval = VotingFunctions.GeneratekApprovalVector(4, 2);
-			int sincereWinner = VotingFunctions.FindUniqueScoringWinner(p, twoApproval);
-			Assert.AreEqual(1, sincereWinner);
+        [TestMethod]
+        public void TestTwoApprovalManipulationNF()
+        {
+            TestTwoApprovalManipulation(Manipulation.ManipulationAlgorithm.NormalForm);
+        }
 
-			int twoManipulates = Manipulation.OptimalScoringRuleOutcome(p, twoApproval, 2);
-			Assert.AreEqual(0, twoManipulates);
+        [TestMethod]
+        public void TestTwoApprovalManipulationGS()
+        {
+            TestTwoApprovalManipulation(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
 
-			int threeCannot = Manipulation.OptimalScoringRuleOutcome(p, twoApproval, 3);
-			Assert.AreEqual(sincereWinner, threeCannot);
-		}
+        private void TestTwoApprovalManipulation(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                { 0, 3, 2, 1 },
+                {0, 1, 3, 2 },
+                {0, 1, 2, 3 },
+                {2, 1, 0, 3 },
+                {2, 1, 3, 0},
+                {3, 2, 1, 0}
+            });
+            double[] twoApproval = VotingFunctions.GeneratekApprovalVector(4, 2);
+            int sincereWinner = VotingFunctions.FindUniqueScoringWinner(p, twoApproval);
+            Assert.AreEqual(1, sincereWinner);
 
-		[TestMethod]
-		public void TestBordaLarge()
-		{
-			Profile profile = new Profile(
-				new int[,] {
-					{ 6,0,5,8,2,4,9,1,7,3 },
-					{ 2,1,7,9,8,0,6,4,5,3 },
-					{ 1,4,2,6,8,7,0,3,5,9 },
-					{ 1,4,3,7,2,9,5,8,0,6},
-					{ 2,3,8,4,9,7,0,1,6,5},
-					{8,3,6,2,7,0,5,1,4,9 },
-					{ 0,6,8,9,3,7,4,1,2,5 },
-					{4,3,9,2,7,8,0,6,5,1 },
-					{5,1,8,6,2,4,0,9,7,3 }
-				});
-			double[] bordaScores = VotingFunctions.GenerateTruncBordaVector(10, 9);
-			int oldWinner = VotingFunctions.FindUniqueScoringWinner(profile, bordaScores);
-			Assert.AreEqual(2, oldWinner);
+            int twoManipulates = Manipulation.OptimalScoringRuleOutcome(
+                p,
+                twoApproval,
+                2,
+                algo);
+            Assert.AreEqual(0, twoManipulates);
 
-			int oneManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 0);
-			Assert.AreEqual(8, oneManipulates);
+            int threeCannot = Manipulation.OptimalScoringRuleOutcome(
+                p,
+                twoApproval,
+                3,
+                algo);
+            Assert.AreEqual(sincereWinner, threeCannot);
+        }
 
-			int twoManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 1);
-			Assert.AreEqual(oldWinner, twoManipulates);
+        [TestMethod]
+        public void TestGenPlurManipulationNF()
+        {
+            TestGenPlurManipulation(Manipulation.ManipulationAlgorithm.NormalForm);
+        }
 
-			int threeManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 2);
-			Assert.AreEqual(oldWinner, threeManipulates);
 
-			int fourManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 3);
-			Assert.AreEqual(oldWinner, fourManipulates);
 
-			int fiveManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 4);
-			Assert.AreEqual(oldWinner, fiveManipulates);
+        [TestMethod]
+        public void TestGenPlurManipulationGS()
+        {
+            TestGenPlurManipulation(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
 
-			int sixManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 5);
-			Assert.AreEqual(8, sixManipulates);
+        private void TestGenPlurManipulation(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                { 0, 6, 2, 3, 4, 5, 1 },
+                { 0, 1, 2, 3, 4, 5, 6 },
+                { 0, 1, 2, 3, 4, 5, 6 },
+                { 0, 1, 2, 3, 4, 5, 6 },
+                { 0, 1, 2, 3, 4, 5, 6 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+                { 6, 5, 4, 3, 2, 1, 0 },
+            });
 
-			int sevenManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 6);
-			Assert.AreEqual(8, sevenManipulates);
+            BigDecimal[] genPlur = VotingFunctions.GenerateGeometricVector(7, 10);
+            int sincereWinner = VotingFunctions.FindUniqueScoringWinner(p, genPlur);
+            Assert.AreEqual(6, sincereWinner);
 
-			int eightManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 7);
-			Assert.AreEqual(oldWinner, eightManipulates);
+            Assert.AreEqual(0, Manipulation.OptimalScoringRuleOutcome(
+                p,
+                genPlur,
+                0,
+                algo));
 
-			int nineManipulates = Manipulation.OptimalScoringRuleOutcome(profile, bordaScores, 8);
-			Assert.AreEqual(8, nineManipulates);
-		}
+        }
 
-		[TestMethod]
-		public void TestManipulationOutcome()
-		{
-			var scores = new Dictionary<int, double> {
-				{0, 2 },
-				{1, 0 },
-				{2, -1 },
-				{3, 0 },
-				{4, 5 },
-				{5, 6 }
-			};
-			var scoringVector = new double[] { 1, 0, 0, 0, 0, 0 };
-			List<int> vote = new List<int> { 4, 3, 5, 2, 1, 0 };
-			Assert.AreEqual(4, Manipulation.ManipulationOutcome(scores, scoringVector, vote));
-		}
+        [TestMethod]
+        public void TestGenAntiPlurManipulationNF()
+        {
+            TestGenAntiPlurManipulation(Manipulation.ManipulationAlgorithm.NormalForm);
+        }
 
-		[TestMethod]
-		public void TestBorda3CandidatesManipulation()
-		{
-			Profile p = new Profile(new int[,] {
-				{0, 1, 2 },
-				{1, 0, 2 },
-				{2, 0, 1 },
-				{1, 2, 0 }
-			});
-			int oldWinner = VotingFunctions.FindUniqueScoringWinner(p, new double[] { 2, 1, 0 });
-			Assert.AreEqual(1, oldWinner);
-			int newWinner = Manipulation.OptimalScoringRuleOutcome(
-				p,
-				new double[] { 2, 1, 0 },
-				2);
-			Assert.AreEqual(0, newWinner);
-		}
+        [TestMethod]
+        public void TestGenAntiPlurManipulationGS()
+        {
+            TestGenAntiPlurManipulation(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
 
-		[TestMethod]
-		public void TestFindIndicesInList()
-		{
-			List<int> list = new List<int> { 9, 4, 5, 2, 3, 1, 0 };
-			Dictionary<int, int> indices = Manipulation.FindIndicesInList(list);
+        private void TestGenAntiPlurManipulation(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+                { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 },
+                {  2, 3, 4, 5, 6, 7, 8, 9, 0, 1, },
+                {  3, 4, 5, 6, 7, 8, 9, 0, 1, 2, },
+                {  4, 5, 6, 7, 8, 9, 0, 1, 2, 3, },
+                {  5, 6, 7, 8, 9, 0, 1, 2, 3, 4, },
+                {  6, 7, 8, 9, 0, 1, 2, 3, 4, 5, },
+                {  7, 8, 9, 0, 1, 2, 3, 4, 5, 6, },
+                {  8, 9, 0, 1, 2, 3, 4, 5, 6, 7, },
+                {  9, 0, 1, 2, 3, 4, 5, 6, 7, 8, },
+            });
 
-			Assert.AreEqual(0, indices[9]);
-			Assert.AreEqual(1, indices[4]);
-			Assert.AreEqual(2, indices[5]);
-			Assert.AreEqual(3, indices[2]);
-			Assert.AreEqual(4, indices[3]);
-			Assert.AreEqual(5, indices[1]);
-			Assert.AreEqual(6, indices[0]);
-		}
+            BigDecimal[] genAntiPlur = VotingFunctions.GenerateGeometricVector(10, 0.1);
+            int sincereWinner = VotingFunctions.FindUniqueScoringWinner(p, genAntiPlur);
+            Assert.AreEqual(0, sincereWinner);
 
-		[TestMethod]
-		public void TestRemoveManipulatorScores()
-		{
-			Profile profile = new Profile(new int[,]
-			{ { 0, 1, 2, 3, 4 },
-			{ 2, 1, 3, 4, 0 },
-			{0, 4, 3, 1, 2 },
-			{ 4, 3, 2, 1, 0 },
-			});
-			double[] scoringVector = { 5, 3, 2, 1, 0 };
-			Dictionary<int, double> scores = VotingFunctions.FindScoringRuleScores(profile, scoringVector);
-			Manipulation.RemoveManipulatorScores(scores, profile, scoringVector, 1);
+            Assert.AreEqual(2, Manipulation.OptimalScoringRuleOutcome(
+                p,
+                genAntiPlur,
+                1,
+                algo));
+        }
 
-			Profile newProfile = new Profile(new int[,]
-			{ { 0, 1, 2, 3, 4 },
-			{0, 4, 3, 1, 2 },
-			{ 4, 3, 2, 1, 0 },
-			});
-			Dictionary<int, double> newScores = VotingFunctions.FindScoringRuleScores(newProfile, scoringVector);
-			foreach (int candidate in profile.Candidates)
-			{
-				Assert.AreEqual(newScores[candidate], scores[candidate]);
-			}
-		}
-	}
+        [TestMethod]
+        public void TestFindIrrelevantCopelandCandidates()
+        {
+            Profile profile = new Profile(new int[,]
+            {
+                { 5, 0, 1, 2, 3, 4, 6 },
+                { 5, 2, 1, 3, 4, 0, 6 },
+                {5, 0, 4, 3, 1, 2, 6 },
+                { 5, 4, 3, 2, 1, 0, 6 },
+            });
+            HashSet<int> irrelevant = Manipulation.FindIrrelevantCopelandCandidates(profile);
+            Assert.AreEqual(2, irrelevant.Count);
+            Assert.IsTrue(irrelevant.Contains(5));
+            Assert.IsTrue(irrelevant.Contains(6));
+        }
 
-	[TestClass]
+        [TestMethod]
+        public void TestCopelandManipulationBreakNFGS()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+
+            Assert.AreEqual(2, VotingFunctions.FindUniqueCopelandWinner(p));
+            Assert.AreEqual(3, Manipulation.OptimalCopelandOutcome(p, 0, Manipulation.ManipulationAlgorithm.GreedySearch));
+        }
+
+        [TestMethod]
+        public void TestCopelandManipulationBreakNFOG()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+
+            Assert.AreEqual(2, VotingFunctions.FindUniqueCopelandWinner(p));
+            Assert.AreEqual(3, Manipulation.OptimalCopelandOutcome(p, 0, Manipulation.ManipulationAlgorithm.OptimisedGreedy));
+        }
+
+        [TestMethod]
+        public void CopelandManipulationGS()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2},
+                    { 0, 2, 1},
+                    { 0, 2, 1},
+                    { 1, 2, 0},
+                    { 1, 2, 0},
+                    { 1, 2, 0},
+                });
+
+            Assert.AreEqual(1, VotingFunctions.FindUniqueCopelandWinner(profile));
+            Assert.AreEqual(0, Manipulation.OptimalCopelandOutcome(profile, 0, Manipulation.ManipulationAlgorithm.GreedySearch));
+        }
+
+        [TestMethod]
+        public void CopelandManipulationOG()
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 0, 1, 2},
+                    { 0, 2, 1},
+                    { 0, 2, 1},
+                    { 1, 2, 0},
+                    { 1, 2, 0},
+                    { 1, 2, 0},
+                });
+
+            Assert.AreEqual(1, VotingFunctions.FindUniqueCopelandWinner(profile));
+            Assert.AreEqual(0, Manipulation.OptimalCopelandOutcome(profile, 0, Manipulation.ManipulationAlgorithm.OptimisedGreedy));
+        }
+
+        [TestMethod]
+        public void TestBordaLargeGS()
+        {
+            TestBordaLarge(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
+
+        [TestMethod]
+        public void TestBordaLargeNF()
+        {
+            TestBordaLarge(Manipulation.ManipulationAlgorithm.NormalForm);
+        }
+
+        private void TestBordaLarge(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile profile = new Profile(
+                new int[,] {
+                    { 6,0,5,8,2,4,9,1,7,3 },
+                    { 2,1,7,9,8,0,6,4,5,3 },
+                    { 1,4,2,6,8,7,0,3,5,9 },
+                    { 1,4,3,7,2,9,5,8,0,6},
+                    { 2,3,8,4,9,7,0,1,6,5},
+                    {8,3,6,2,7,0,5,1,4,9 },
+                    { 0,6,8,9,3,7,4,1,2,5 },
+                    {4,3,9,2,7,8,0,6,5,1 },
+                    {5,1,8,6,2,4,0,9,7,3 }
+                });
+            double[] bordaScores = VotingFunctions.GenerateTruncBordaVector(10, 9);
+            int oldWinner = VotingFunctions.FindUniqueScoringWinner(profile, bordaScores);
+            Assert.AreEqual(2, oldWinner);
+
+            int oneManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                0,
+                algo);
+            Assert.AreEqual(8, oneManipulates);
+
+            int twoManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                1,
+                algo);
+            Assert.AreEqual(oldWinner, twoManipulates);
+
+            int threeManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                2,
+                algo);
+            Assert.AreEqual(oldWinner, threeManipulates);
+
+            int fourManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                3,
+                algo);
+            Assert.AreEqual(oldWinner, fourManipulates);
+
+            int fiveManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                4,
+                algo);
+            Assert.AreEqual(oldWinner, fiveManipulates);
+
+            int sixManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                5,
+                algo);
+            Assert.AreEqual(8, sixManipulates);
+
+            int sevenManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                6,
+                algo);
+            Assert.AreEqual(8, sevenManipulates);
+
+            int eightManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                7,
+                algo);
+            Assert.AreEqual(oldWinner, eightManipulates);
+
+            int nineManipulates = Manipulation.OptimalScoringRuleOutcome(
+                profile,
+                bordaScores,
+                8,
+                algo);
+            Assert.AreEqual(8, nineManipulates);
+        }
+
+        [TestMethod]
+        public void TestManipulationOutcome()
+        {
+            var scores = new Dictionary<int, double> {
+                {0, 2 },
+                {1, 0 },
+                {2, -1 },
+                {3, 0 },
+                {4, 5 },
+                {5, 6 }
+            };
+            var scoringVector = new double[] { 1, 0, 0, 0, 0, 0 };
+            List<int> vote = new List<int> { 4, 3, 5, 2, 1, 0 };
+            Assert.AreEqual(4, Manipulation.ScoringRuleManipulationOutcome(scores, scoringVector, vote));
+        }
+
+        [TestMethod]
+        public void TestBorda3CandidatesManipulationGS()
+        {
+            TestBorda3CandidatesManipulation(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
+
+        [TestMethod]
+        public void TestBorda3CandidatesManipulationNF()
+        {
+            TestBorda3CandidatesManipulation(Manipulation.ManipulationAlgorithm.NormalForm);
+        }
+
+        private void TestBorda3CandidatesManipulation(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                {0, 1, 2 },
+                {1, 0, 2 },
+                {2, 0, 1 },
+                {1, 2, 0 }
+            });
+            int oldWinner = VotingFunctions.FindUniqueScoringWinner(p, new double[] { 2, 1, 0 });
+            Assert.AreEqual(1, oldWinner);
+            int newWinner = Manipulation.OptimalScoringRuleOutcome(
+                p,
+                new double[] { 2, 1, 0 },
+                2,
+                algo);
+            Assert.AreEqual(0, newWinner);
+        }
+
+        [TestMethod]
+        public void TestFindIndicesInList()
+        {
+            List<int> list = new List<int> { 9, 4, 5, 2, 3, 1, 0 };
+            Dictionary<int, int> indices = Manipulation.FindIndicesInList(list);
+
+            Assert.AreEqual(0, indices[9]);
+            Assert.AreEqual(1, indices[4]);
+            Assert.AreEqual(2, indices[5]);
+            Assert.AreEqual(3, indices[2]);
+            Assert.AreEqual(4, indices[3]);
+            Assert.AreEqual(5, indices[1]);
+            Assert.AreEqual(6, indices[0]);
+        }
+
+        [TestMethod]
+        public void TestRemoveManipulatorScores()
+        {
+            Profile profile = new Profile(new int[,]
+            { { 0, 1, 2, 3, 4 },
+            { 2, 1, 3, 4, 0 },
+            {0, 4, 3, 1, 2 },
+            { 4, 3, 2, 1, 0 },
+            });
+            double[] scoringVector = { 5, 3, 2, 1, 0 };
+            Dictionary<int, double> scores = VotingFunctions.FindScoringRuleScores(profile, scoringVector);
+            Manipulation.RemoveManipulatorScores(scores, profile, scoringVector, 1);
+
+            Profile newProfile = new Profile(new int[,]
+            { { 0, 1, 2, 3, 4 },
+            {0, 4, 3, 1, 2 },
+            { 4, 3, 2, 1, 0 },
+            });
+            Dictionary<int, double> newScores = VotingFunctions.FindScoringRuleScores(newProfile, scoringVector);
+            foreach (int candidate in profile.Candidates)
+            {
+                Assert.AreEqual(newScores[candidate], scores[candidate]);
+            }
+        }
+    }
+
+    [TestClass]
 	public class MallowsTests
 	{
 		[TestMethod]
@@ -790,7 +1172,36 @@ namespace Tests
 			Assert.IsTrue(vector[1] < 1);
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public void TestFindScoreOfIndividual()
+        {
+            Profile profile = new Profile(
+                new int[,] {
+                    { 6,0,5,8,2,4,9,1,7,3 },
+                    { 2,1,7,9,8,0,6,4,5,3 },
+                    { 1,4,2,6,8,7,0,3,5,9 },
+                    { 1,4,3,7,2,9,5,8,0,6},
+                    { 2,3,8,4,9,7,0,1,6,5},
+                    {8,3,6,2,7,0,5,1,4,9 },
+                    { 0,6,8,9,3,7,4,1,2,5 },
+                    {4,3,9,2,7,8,0,6,5,1 },
+                    {5,1,8,6,2,4,0,9,7,3 }
+                });
+
+            double[] scoringVector = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+            Assert.AreEqual(38, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 0, scoringVector), "0 has 38 points.");
+            Assert.AreEqual(42, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 1, scoringVector), "1 has 42 points.");
+            Assert.AreEqual(53, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 2, scoringVector), "2 has 53 points.");
+            Assert.AreEqual(38, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 3, scoringVector), "3 has 38 points.");
+            Assert.AreEqual(45, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 4, scoringVector), "4 has 45 points.");
+            Assert.AreEqual(25, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 5, scoringVector), "5 has 25 points.");
+            Assert.AreEqual(42, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 6, scoringVector), "6 has 42 points.");
+            Assert.AreEqual(37, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 7, scoringVector), "7 has 37 points.");
+            Assert.AreEqual(52, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 8, scoringVector), "8 has 52 points.");
+            Assert.AreEqual(33, VotingFunctions.FindScoringRuleScoreOfCandidate(profile, 9, scoringVector), "9 has 33 points.");
+        }
+
+        [TestMethod]
 		public void TestBordaScores()
 		{
 			Profile profile = new Profile(

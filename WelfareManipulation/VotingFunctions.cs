@@ -121,7 +121,12 @@ namespace WelfareManipulation
 			return MaxKeysInDict(scores).Min();
 		}
 
-		public static int FindUniqueScoringWinner(Profile profile, double[] scoringVector)
+        public static int FindUniqueCopelandWinner(Profile profile)
+        {
+            return WinnerFromScoringDict(FindCopelandScores(profile));
+        }
+
+        public static int FindUniqueScoringWinner(Profile profile, double[] scoringVector)
 		{
 			return WinnerFromScoringDict(FindScoringRuleScores(profile, scoringVector));
 		}
@@ -131,7 +136,43 @@ namespace WelfareManipulation
 			return WinnerFromScoringDict(FindScoringRuleScores(profile, scoringVector));
 		}
 
-		public static Dictionary<int, double> FindScoringRuleScores(Profile profile, double[] scoringVector)
+		public static Dictionary<int, double> FindCopelandScores(Profile profile)
+		{
+			var scores = new Dictionary<int, double>();
+            foreach (int candidate in profile.Candidates)
+            {
+                scores[candidate] = profile.CopelandScore(candidate);
+            }
+			return scores;
+        }
+
+        public static double FindScoringRuleScoreOfCandidate(
+            Profile profile,
+            int candidate,
+            double[] scoringVector)
+        {
+            double score = 0;
+            foreach (int voter in profile.Voters)
+            {
+                score += scoringVector[profile.VoterIRanks(voter, candidate)];
+            }
+            return score;
+        }
+
+        public static BigDecimal FindScoringRuleScoreOfCandidate(
+            Profile profile,
+            int candidate,
+            BigDecimal[] scoringVector)
+        {
+            BigDecimal score = 0;
+            foreach (int voter in profile.Voters)
+            {
+                score += scoringVector[profile.VoterIRanks(voter, candidate)];
+            }
+            return score;
+        }
+
+        public static Dictionary<int, double> FindScoringRuleScores(Profile profile, double[] scoringVector)
 		{
 			var scores = new Dictionary<int, double>();
 			foreach (int candidate in profile.Candidates)

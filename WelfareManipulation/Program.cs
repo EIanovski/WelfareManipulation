@@ -46,7 +46,7 @@ namespace WelfareManipulation
 			 * MallowsSushi is only well defined for 10 candidates.
 			 * SkatingBag is only well defined for 30 candidates.
 			 */
-			StatisticalCulture culture = StatisticalCulture.ImpartialCulture;
+			//StatisticalCulture culture = StatisticalCulture.ImpartialCulture;
 			//StatisticalCulture culture = StatisticalCulture.EuclideanOne;
 			//StatisticalCulture culture = StatisticalCulture.EuclideanTwo;
 			//StatisticalCulture culture = StatisticalCulture.EuclideanFive;
@@ -59,24 +59,26 @@ namespace WelfareManipulation
 			 * Comment out the voting functions you are not interested in.
 			 */
 			VotingFunctions.VotingRule[] votingFunctions = {
-				//BordaSincere, BordaManip,
-				//PluralitySincere, PluralityManip,
-				//Geometric0p5Sincere, Geometric0p5Manip,
-				//Geometric0p65Sincere, Geometric0p65Manip,
-				//Geometric0p8Sincere, Geometric0p8Manip,
-				//Geometric1p2Sincere, Geometric1p2Manip,
-				//Geometric1p5Sincere, Geometric1p5Manip,
-				//Geometric2Sincere, Geometric2Manip,
-				//FiveApprovalSincere, FiveApprovalManip,
-				//FiveBordaSincere, FiveBordaManip,
-				//HalfApprovalSincere, HalfApprovalManip,
-				//HalfBordaSincere, HalfBordaManip,
-				//QuarterApprovalSincere, QuarterApprovalManip,
-				//QuarterBordaSincere, QuarterBordaManip,
-				//NashSincere, NashManip,
+				/*BordaSincere, BordaManip,
+				PluralitySincere, PluralityManip,
+				Geometric0p5Sincere, Geometric0p5Manip,
+				Geometric0p65Sincere, Geometric0p65Manip,
+				Geometric0p8Sincere, Geometric0p8Manip,
+				Geometric1p2Sincere, Geometric1p2Manip,
+				Geometric1p5Sincere, Geometric1p5Manip,
+				Geometric2Sincere, Geometric2Manip,
+				FiveApprovalSincere, FiveApprovalManip,
+				FiveBordaSincere, FiveBordaManip,
+				HalfApprovalSincere, HalfApprovalManip,
+				HalfBordaSincere, HalfBordaManip,
+				QuarterApprovalSincere, QuarterApprovalManip,
+				QuarterBordaSincere, QuarterBordaManip,
+				NashSincere, NashManip,
 				GenAntipSincere, GenAntipManip,
-				//GenPlurSincere, GenPlurManip
-			};
+				GenPlurSincere, GenPlurManip,
+                VetoSincere, VetoManip,*/
+				CopelandSincere, CopelandManip
+            };
 
 			/*
 			 * By default, results are stored in .\results
@@ -84,34 +86,71 @@ namespace WelfareManipulation
 			System.IO.Directory.CreateDirectory("results");
 			string[] fileNames;
 
-			foreach (VotingFunctions.VotingRule rule in votingFunctions)
+			StatisticalCulture[] cultures = new StatisticalCulture[]
 			{
-				Dictionary<int, double>[] results =
-					Simulations.GenerateUtilitySeries(
-						iterations,
-						numberOfFixedAxis,
-						variableAxisRange,
-						culture,
-						utilities,
-						rule,
-						fixedAxisName,
-						out fileNames
-					);
-				for (int j = 0; j < utilities.Length; j++)
-				{
-					File.WriteAllText("results\\" + fileNames[j], Utilities.DictionaryToString(results[j]));
-				}
-				Console.WriteLine(rule.Name + " done. Time taken: " + (DateTime.Now - time));
-				time = DateTime.Now;
-			}
+                StatisticalCulture.ImpartialCulture,
+				StatisticalCulture.EuclideanOne,
+				StatisticalCulture.EuclideanTwo,
+				StatisticalCulture.EuclideanFive,
+				StatisticalCulture.MallowsPointEight,
+				StatisticalCulture.MallowsPointFive,
+				StatisticalCulture.MixedMallowsTwo,
+                /*StatisticalCulture.MallowsSushi,
+                StatisticalCulture.SkatingBag*/
+            };
+
+			foreach (StatisticalCulture culture in cultures)
+			{
+                foreach (VotingFunctions.VotingRule rule in votingFunctions)
+                {
+                    Dictionary<int, double>[] results =
+                        Simulations.GenerateUtilitySeries(
+                            iterations,
+                            numberOfFixedAxis,
+                            variableAxisRange,
+                            culture,
+                            utilities,
+                            rule,
+                            fixedAxisName,
+                            out fileNames
+                        );
+                    for (int j = 0; j < utilities.Length; j++)
+                    {
+                        File.WriteAllText("results\\" + fileNames[j], Utilities.DictionaryToString(results[j]));
+                    }
+                    Console.WriteLine(rule.Name + " done. Time taken: " + (DateTime.Now - time));
+                    time = DateTime.Now;
+                }
+            }
 			Console.WriteLine("All done.");
 			Console.ReadLine();
 		}
 
+        public static VotingFunctions.VotingRule CopelandSincere = new VotingFunctions.VotingRule(
+            "CopelandSincere",
+            profile => VotingFunctions.FindUniqueCopelandWinner(profile));
 
-		
+        public static VotingFunctions.VotingRule CopelandManip = new VotingFunctions.VotingRule(
+            "CopelandManip",
+            profile => Manipulation.OptimalCopelandOutcome(profile));
 
-		public static VotingFunctions.VotingRule BordaSincere = new VotingFunctions.VotingRule(
+        /*public static VotingFunctions.VotingRule SeqMajSincere = new VotingFunctions.VotingRule(
+            "SeqMajSincere",
+            profile => VotingFunctions.FindSequentialMajorityWinner(profile));
+
+        public static VotingFunctions.VotingRule SeqMajManip = new VotingFunctions.VotingRule(
+            "SeqMajManip",
+            profile => Manipulation.OptimalSequentialMajorityOutcome(profile));
+
+        public static VotingFunctions.VotingRule MaxMinSincere = new VotingFunctions.VotingRule(
+            "MaxMinSincere",
+            profile => VotingFunctions.FindUniqueMaxMinWinner(profile));
+
+        public static VotingFunctions.VotingRule MaxMinManip = new VotingFunctions.VotingRule(
+            "MaxMinManip",
+            profile => Manipulation.OptimalMaxMinOutcome(profile));*/
+
+        public static VotingFunctions.VotingRule BordaSincere = new VotingFunctions.VotingRule(
 			"BordaSincere",
 			profile => VotingFunctions.FindUniqueScoringWinner(
 				profile,
@@ -136,13 +175,13 @@ namespace WelfareManipulation
 				VotingFunctions.GeneratekApprovalVector(profile.NumberOfCandidates, 1)));
 
 		public static VotingFunctions.VotingRule VetoSincere = new VotingFunctions.VotingRule(
-			"VetoSincere",
+			"AntipSincere",
 			profile => VotingFunctions.FindUniqueScoringWinner(
 				profile,
 				VotingFunctions.GeneratekApprovalVector(profile.NumberOfCandidates, profile.NumberOfCandidates - 1)));
 
 		public static VotingFunctions.VotingRule VetoManip = new VotingFunctions.VotingRule(
-			"VetoManip",
+			"AntipManip",
 			profile => Manipulation.OptimalScoringRuleOutcome(
 				profile,
 				VotingFunctions.GeneratekApprovalVector(profile.NumberOfCandidates, profile.NumberOfCandidates - 1)));
