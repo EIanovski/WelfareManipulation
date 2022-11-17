@@ -322,7 +322,7 @@ namespace WelfareManipulation
         public static int OptimalCopelandOutcome(
             Profile profile,
             int manipulator = 0,
-            ManipulationAlgorithm algo = ManipulationAlgorithm.GreedySearch)
+            ManipulationAlgorithm algo = ManipulationAlgorithm.OptimisedGreedy)
         {
             if (algo == ManipulationAlgorithm.GreedySearch)
             {
@@ -372,28 +372,19 @@ namespace WelfareManipulation
            int manipulator = 0)
         {
             int[] sincerePrefs = profile.GetVoter(manipulator);
-            HashSet<int> irrelevantCandidates = FindIrrelevantCopelandCandidates(profile);
-            foreach (int bestChoice in sincerePrefs)
+            var remainingCandidates = new HashSet<int>(profile.Candidates);
+            int[] strategicVote = new int[profile.NumberOfCandidates];
+            
+            for (int i=0; i<profile.NumberOfCandidates; i++)
             {
-                int[] strategicVote = new int[profile.NumberOfCandidates];
+                sincerePrefs.CopyTo(strategicVote, 0);
+                int bestChoice = sincerePrefs[i];
+                strategicVote[i] = strategicVote[0];
                 strategicVote[0] = bestChoice;
-                var remainingCandidates = new HashSet<int>(profile.Candidates);
-                remainingCandidates.ExceptWith(irrelevantCandidates);
-                irrelevantCandidates.Remove(bestChoice);
                 remainingCandidates.Remove(bestChoice);
-                int i = 1;
-                foreach (int candidate in irrelevantCandidates)
-                {
-                    strategicVote[i] = candidate;
-                    i++;
-                }
-                int winner = GreedySearch(
-                    profile,
+                int winner = GreedySearch(profile, 
                     (p, candidate) => p.CopelandScore(candidate),
-                    remainingCandidates,
-                    strategicVote,
-                    i,
-                    manipulator);
+                    new HashSet<int>(remainingCandidates), strategicVote, i+1, manipulator);
                 if (winner != INVALID_WINNER)
                 {
                     return winner;
@@ -403,28 +394,6 @@ namespace WelfareManipulation
         }
 
 
-        private static int CopelandManipulationOutcome(
-            Profile profile,
-            int manipulator,
-            IEnumerable<int> strategicVote)
-        {
-            int[] manipulatorPrefs = profile.GetVoter(manipulator);
-            profile.SetVoter(manipulator, strategicVote);
-            int winner = VotingFunctions.FindUniqueCopelandWinner(profile);
-            profile.SetVoter(manipulator, manipulatorPrefs);
-            return winner;
-        }
-
-        private static Dictionary<int, double> CopelandScoresWithoutManipulator(
-            Profile profile,
-            int manipulator)
-        {
-            int[] manipulatorPrefs = profile.GetVoter(manipulator);
-            profile.AddOrRemoveTournamentMatrixEntry(manipulator);
-            Dictionary<int, double> scoresWithoutManipulator = VotingFunctions.FindCopelandScores(profile);
-            profile.AddOrRemoveTournamentMatrixEntry(manipulator, manipulatorPrefs);
-            return scoresWithoutManipulator;
-        }
 
         public static int OptimalScoringRuleOutcome(
             Profile profile,

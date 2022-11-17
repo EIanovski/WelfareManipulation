@@ -837,6 +837,34 @@ namespace Tests
             Assert.AreEqual(0, Manipulation.OptimalCopelandOutcome(profile, 0, Manipulation.ManipulationAlgorithm.OptimisedGreedy));
         }
 
+        private void TestCopelandManipulation2(Manipulation.ManipulationAlgorithm algo)
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 3, 0, 4, 1, 2},
+                    { 2, 0, 3, 1, 4},
+                    { 0, 4, 2, 3, 1},
+                    { 3, 4, 2, 0, 1},
+                    { 1, 2, 4, 3, 0},
+                });
+            int sincereWinner = VotingFunctions.FindUniqueCopelandWinner(profile);
+            Assert.AreEqual(2, VotingFunctions.FindUniqueCopelandWinner(profile));
+            Assert.AreEqual(0, Manipulation.OptimalCopelandOutcome(profile, 0, algo));
+        }
+
+        [TestMethod]
+        public void TestCopelandManipulation2GS()
+        {
+            TestCopelandManipulation2(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
+
+        [TestMethod]
+        public void TestCopelandManipulation2OG()
+        {
+            TestCopelandManipulation2(Manipulation.ManipulationAlgorithm.OptimisedGreedy);
+        }
+
+
         [TestMethod]
         public void TestBordaLargeGS()
         {
