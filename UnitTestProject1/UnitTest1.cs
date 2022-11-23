@@ -911,6 +911,87 @@ namespace Tests
             TestCopelandManipulation3(Manipulation.ManipulationAlgorithm.OptimisedGreedy);
         }
 
+        [TestMethod]
+        public void TestSimpsonManipulation2()
+        {
+            foreach (Manipulation.ManipulationAlgorithm algo in Manipulation.ImplementedSimpsonManipulationAlgorithms)
+            {
+                TestSimpsonManipulation2(algo);
+            }
+        }
+
+        private void TestSimpsonManipulation2(Manipulation.ManipulationAlgorithm algo)
+        {
+            var profile = new Profile(
+                new int[,] {
+                    { 3, 0, 4, 1, 2},
+                    { 2, 0, 3, 1, 4},
+                    { 0, 4, 2, 3, 1},
+                    { 3, 2, 4, 0, 1},
+                    { 1, 2, 4, 3, 0},
+                });
+            Assert.AreEqual(2, VotingFunctions.FindUniqueSimpsonWinner(profile));
+
+            Assert.AreEqual(2, Manipulation.OptimalSimpsonOutcome(profile, 0, algo), "Wrong outcome with " + algo.ToString());
+            Assert.AreEqual(2, Manipulation.OptimalSimpsonOutcome(profile, 1, algo), "Wrong outcome with " + algo.ToString());
+            Assert.AreEqual(0, Manipulation.OptimalSimpsonOutcome(profile, 2, algo), "Wrong outcome with " + algo.ToString());
+            Assert.AreEqual(2, Manipulation.OptimalSimpsonOutcome(profile, 3, algo), "Wrong outcome with " + algo.ToString());
+            Assert.AreEqual(2, Manipulation.OptimalSimpsonOutcome(profile, 4, algo), "Wrong outcome with " + algo.ToString());
+        }
+
+        [TestMethod]
+        public void TestSimpsonManipulation1()
+        {
+            foreach (Manipulation.ManipulationAlgorithm algo in Manipulation.ImplementedSimpsonManipulationAlgorithms)
+            {
+                TestSimpsonManipulation1(algo);
+            }
+        }
+
+        private void TestSimpsonManipulation1(Manipulation.ManipulationAlgorithm algo)
+        {
+            var profile = new Profile(new int[,] {
+                { 4, 1, 2, 3, 0 },
+                { 1, 4, 2, 3, 0 },
+                { 3, 1, 4, 2, 0 },
+                { 0, 2, 3, 4, 1 },
+                {2, 0, 3, 1, 4 } });
+            Assert.AreEqual(1, VotingFunctions.FindUniqueSimpsonWinner(profile));
+
+            Assert.AreEqual(1, Manipulation.OptimalSimpsonOutcome(profile, 0, algo));
+            Assert.AreEqual(1, Manipulation.OptimalSimpsonOutcome(profile, 1, algo));
+            Assert.AreEqual(1, Manipulation.OptimalSimpsonOutcome(profile, 2, algo));
+            Assert.AreEqual(1, Manipulation.OptimalSimpsonOutcome(profile, 3, algo));
+            Assert.AreEqual(0, Manipulation.OptimalSimpsonOutcome(profile, 4, algo));
+        }
+
+        [TestMethod]
+        public void TestSimpsonManipulation3()
+        {
+            foreach (Manipulation.ManipulationAlgorithm algo in Manipulation.ImplementedSimpsonManipulationAlgorithms)
+            {
+                TestSimpsonManipulation3(algo);
+            }
+        }
+
+        private void TestSimpsonManipulation3(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                { 4, 2, 1, 3, 0 },
+                { 0, 1, 2, 3,4 },
+                {  3, 1, 4, 0, 2 },
+                {  0, 4, 1, 3, 2 },
+                {  2, 3, 4, 1, 0 }
+            });
+            Assert.AreEqual(0, VotingFunctions.FindUniqueSimpsonWinner(p));
+
+            Assert.AreEqual(1, Manipulation.OptimalSimpsonOutcome(p, 0, algo), "Error with " + algo.ToString());
+            Assert.AreEqual(0, Manipulation.OptimalSimpsonOutcome(p, 1, algo), "Error with " + algo.ToString());
+            Assert.AreEqual(4, Manipulation.OptimalSimpsonOutcome(p, 2, algo), "Error with " + algo.ToString());
+            Assert.AreEqual(0, Manipulation.OptimalSimpsonOutcome(p, 3, algo), "Error with " + algo.ToString());
+            Assert.AreEqual(4, Manipulation.OptimalSimpsonOutcome(p, 4, algo), "Error with " + algo.ToString());
+        }
+
         private void TestCopelandManipulation3(Manipulation.ManipulationAlgorithm algo)
         {
             Profile p = new Profile(new int[,] {
@@ -998,7 +1079,6 @@ namespace Tests
                     { 3, 4, 2, 0, 1},
                     { 1, 2, 4, 3, 0},
                 });
-            int sincereWinner = VotingFunctions.FindUniqueCopelandWinner(profile);
             Assert.AreEqual(2, VotingFunctions.FindUniqueCopelandWinner(profile));
             Assert.AreEqual(0, Manipulation.OptimalCopelandOutcome(profile, 0, algo));
         }
@@ -1125,6 +1205,8 @@ namespace Tests
             List<int> vote = new List<int> { 4, 3, 5, 2, 1, 0 };
             Assert.AreEqual(4, Manipulation.ScoringRuleManipulationOutcome(scores, scoringVector, vote));
         }
+
+
 
         [TestMethod]
         public void TestBorda3CandidatesManipulationGS()

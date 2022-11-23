@@ -135,21 +135,21 @@ namespace WelfareManipulation
             "CopelandManip",
             profile => Manipulation.OptimalCopelandOutcome(profile));
 
+        public static VotingFunctions.VotingRule SimpsonSincere = new VotingFunctions.VotingRule(
+            "SimpsonSincere",
+            profile => VotingFunctions.FindUniqueSimpsonWinner(profile));
+
+        public static VotingFunctions.VotingRule SimpsonManip = new VotingFunctions.VotingRule(
+            "SimpsonManip",
+            profile => Manipulation.OptimalSimpsonOutcome(profile));
+
         /*public static VotingFunctions.VotingRule SeqMajSincere = new VotingFunctions.VotingRule(
             "SeqMajSincere",
             profile => VotingFunctions.FindSequentialMajorityWinner(profile));
 
         public static VotingFunctions.VotingRule SeqMajManip = new VotingFunctions.VotingRule(
             "SeqMajManip",
-            profile => Manipulation.OptimalSequentialMajorityOutcome(profile));
-
-        public static VotingFunctions.VotingRule MaxMinSincere = new VotingFunctions.VotingRule(
-            "MaxMinSincere",
-            profile => VotingFunctions.FindUniqueMaxMinWinner(profile));
-
-        public static VotingFunctions.VotingRule MaxMinManip = new VotingFunctions.VotingRule(
-            "MaxMinManip",
-            profile => Manipulation.OptimalMaxMinOutcome(profile));*/
+            profile => Manipulation.OptimalSequentialMajorityOutcome(profile));*/
 
         public static VotingFunctions.VotingRule BordaSincere = new VotingFunctions.VotingRule(
 			"BordaSincere",

@@ -473,6 +473,30 @@ namespace WelfareManipulation
             throw new Exception("The code was unable to find any winner. This should never happen, since the sincere winner should win in the original profile.");
         }
 
+        internal static int OptimalSimpsonOutcome(
+            Profile profile,
+            int manipulator = 0,
+            ManipulationAlgorithm algo = ManipulationAlgorithm.GreedySearch)
+        {
+            if (algo == ManipulationAlgorithm.GreedySearch)
+            {
+                return OptimalSimpsonOutcomeViaGreedySearch(profile, manipulator);
+            }
+            throw new Exception("Algorithm not implemented");
+        }
+
+        public static ManipulationAlgorithm[] ImplementedSimpsonManipulationAlgorithms =
+        {
+            ManipulationAlgorithm.GreedySearch
+        };
+
+        private static int OptimalSimpsonOutcomeViaGreedySearch(Profile profile, int manipulator)
+        {
+            return GreedySearch(
+                profile,
+                (p, candidate) => p.MaxMinScore(candidate),
+                manipulator);
+        }
 
         public static int OptimalScoringRuleOutcome(
             Profile profile,
