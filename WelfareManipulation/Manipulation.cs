@@ -335,23 +335,95 @@ namespace WelfareManipulation
             throw new Exception("Algorithm not implemented");
         }
 
-        internal static HashSet<int> FindIrrelevantCopelandCandidates(
+        internal static IrrelevantCandidateResult FindIrrelevantCopelandCandidates(
+            Profile profile,
+            int[] strategicVote,
+            int badCandidateIndex,
+            int manipulator)
+        {
+            return FindIrrelevantCandidates(
+                profile,
+                strategicVote,
+                badCandidateIndex,
+                manipulator,
+                (p, c) => p.CopelandScore(c),
+                PossibleCopelandScoreIncrease,
+                PossibleCopelandScoreDecrease);
+        }
+
+        internal static IrrelevantCandidateResult FindIrrelevantSimpsonCandidates(
+            Profile profile,
+            int[] strategicVote,
+            int badCandidateIndex,
+            int manipulator)
+        {
+            return FindIrrelevantCandidates(
+                profile,
+                strategicVote,
+                badCandidateIndex,
+                manipulator,
+                (p, c) => p.MaxMinScore(c),
+                PossibleMaxMinScoreIncrease,
+                PossibleMaxMinScoreDecrease);
+        }
+
+        internal static double PossibleMaxMinScoreIncrease(
+            Profile profile,
+            int candidateIndex,
+            int[] strategicVote)
+        {
+            int candidate = strategicVote[candidateIndex];
+            double worstScore = profile.MaxMinScore(candidate);
+            for (int i = candidateIndex + 1; i < profile.NumberOfCandidates; i++)
+            {
+                int otherCandidate = strategicVote[i];
+                if (profile.HowManyPrefer(candidate, otherCandidate) == worstScore)
+                {
+                    return 0;
+                }
+            }
+            return worstScore == profile.HowManyPrefer(candidate, strategicVote[0]) ? 0 : 1;
+        }
+
+
+        internal static double PossibleMaxMinScoreDecrease(
+            Profile profile,
+            int candidateIndex,
+            int[] strategicVote)
+        {
+            int candidate = strategicVote[candidateIndex];
+            double worstScore = profile.MaxMinScore(candidate);
+            for (int i = candidateIndex + 1; i < profile.NumberOfCandidates; i++)
+            {
+                int otherCandidate = strategicVote[i];
+                if (profile.HowManyPrefer(candidate, otherCandidate) == worstScore)
+                {
+                    return 1;
+                }
+            }
+            return 0;
+        }
+
+
+        private static IrrelevantCandidateResult FindIrrelevantCandidates(
             Profile profile,
             int[] strategicVote,
             int badCandidateIndex,
             int manipulator,
-            out bool dontBother)
+            Func<Profile, int, double> scoreFunction,
+            Func<Profile, int, int[], double> possibleScoreIncrease,
+            Func<Profile, int, int[], double> possibleScoreDecrease)
         {
             int[] sincerePreferences = profile.GetVoter(manipulator);
             profile.SetVoter(manipulator, strategicVote);
-            dontBother = false;
+            bool dontBother = false;
             HashSet<int> irrelevantCandidates = new HashSet<int>(profile.Candidates);
-            double preferredWinnerScore = profile.CopelandScore(strategicVote[0]);
+            double preferredWinnerScore = scoreFunction(profile, strategicVote[0]);
             for (int i = badCandidateIndex; i < profile.NumberOfCandidates; i++)
             {
                 int badCandidate = strategicVote[i];
-                double badCandidateScore = profile.CopelandScore(badCandidate);
-                if (badCandidateScore - PossibleCopelandScoreDecrease(
+                double badCandidateScore = scoreFunction(profile, badCandidate);
+                if (badCandidateScore - possibleScoreDecrease(
                     profile,
                     i,
                     strategicVote) > preferredWinnerScore)
@@ -359,7 +431,7 @@ namespace WelfareManipulation
                     dontBother = true;
                     break;
                 }
-                if (badCandidateScore + PossibleCopelandScoreIncrease(
+                if (badCandidateScore + possibleScoreIncrease(
                     profile,
                     i,
                     strategicVote) >= preferredWinnerScore)
@@ -369,8 +441,13 @@ namespace WelfareManipulation
 
             }
             profile.SetVoter(manipulator, sincerePreferences);
-            return irrelevantCandidates;
+            return new IrrelevantCandidateResult
+            {
+                DontBother = dontBother,
+                IrrelevantCandidates = irrelevantCandidates
+            };
         }
+
 
         internal static double PossibleCopelandScoreDecrease(
             Profile profile,
@@ -422,9 +499,16 @@ namespace WelfareManipulation
             return possibleIncrease;
         }
 
+        internal struct IrrelevantCandidateResult
+        {
+            public bool DontBother;
+            public HashSet<int> IrrelevantCandidates;
+        }
 
-        private static int OptimisedCopelandGreedySearch(
+        private static int OptimisedGreedySearch(
             Profile profile,
+            Func<Profile, int[], int, int, IrrelevantCandidateResult> findIrrelevantCandidates,
+            Func<Profile, int, double> scoreFunction,
             int manipulator = 0)
         {
             int[] sincerePrefs = profile.GetVoter(manipulator);
@@ -437,19 +521,18 @@ namespace WelfareManipulation
                 int bestChoice = sincerePrefs[i];
                 strategicVote[i] = strategicVote[0];
                 strategicVote[0] = bestChoice;
-                bool dontBother;
-                HashSet<int> irrelevantCandidates =
-                    FindIrrelevantCopelandCandidates(
+                IrrelevantCandidateResult irrelevantCandidatesResult =
+                    findIrrelevantCandidates(
                         profile,
                         strategicVote,
                         i + 1,
-                        manipulator,
-                        out dontBother);
-                if (dontBother)
+                        manipulator);
+                if (irrelevantCandidatesResult.DontBother)
                 {
                     continue;
                 }
                 var remainingCandidates = new HashSet<int>(profile.Candidates);
+                HashSet<int> irrelevantCandidates = irrelevantCandidatesResult.IrrelevantCandidates;
                 remainingCandidates.ExceptWith(irrelevantCandidates);
                 irrelevantCandidates.Remove(bestChoice);
                 int j = 1;
@@ -460,7 +543,7 @@ namespace WelfareManipulation
                 }
                 int winner = GreedySearch(
                     profile,
-                    (p, candidate) => p.CopelandScore(candidate),
+                    scoreFunction,
                     new HashSet<int>(remainingCandidates),
                     strategicVote,
                     j,
@@ -473,21 +556,49 @@ namespace WelfareManipulation
             throw new Exception("The code was unable to find any winner. This should never happen, since the sincere winner should win in the original profile.");
         }
 
+
+
+        private static int OptimisedCopelandGreedySearch(
+            Profile profile,
+            int manipulator = 0)
+        {
+            return OptimisedGreedySearch(
+                profile,
+                FindIrrelevantCopelandCandidates,
+                (p, c) => p.CopelandScore(c),
+                manipulator);
+        }
         internal static int OptimalSimpsonOutcome(
             Profile profile,
             int manipulator = 0,
-            ManipulationAlgorithm algo = ManipulationAlgorithm.GreedySearch)
+            ManipulationAlgorithm algo = ManipulationAlgorithm.OptimisedGreedy)
         {
             if (algo == ManipulationAlgorithm.GreedySearch)
             {
                 return OptimalSimpsonOutcomeViaGreedySearch(profile, manipulator);
             }
+            if (algo == ManipulationAlgorithm.OptimisedGreedy)
+            {
+                return OptimisedSimpsonGreedySearch(profile, manipulator);
+            }
             throw new Exception("Algorithm not implemented");
+        }
+
+        private static int OptimisedSimpsonGreedySearch(
+            Profile profile,
+            int manipulator = 0)
+        {
+            return OptimisedGreedySearch(
+                profile,
+                FindIrrelevantSimpsonCandidates,
+                (p, c) => p.MaxMinScore(c),
+                manipulator);
         }
 
         public static ManipulationAlgorithm[] ImplementedSimpsonManipulationAlgorithms =
         {
-            ManipulationAlgorithm.GreedySearch
+            ManipulationAlgorithm.GreedySearch,
+            ManipulationAlgorithm.OptimisedGreedy
         };
 
         private static int OptimalSimpsonOutcomeViaGreedySearch(Profile profile, int manipulator)

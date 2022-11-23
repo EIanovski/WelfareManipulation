@@ -813,6 +813,45 @@ namespace Tests
         }
 
         [TestMethod]
+        public void TestFindIrrelevantSimpsonCandidates()
+        {
+            Profile p = new Profile(new int[,] {
+                { 4, 2, 1, 3, 0 },
+                { 0, 1, 2, 3,4 },
+                {  3, 1, 4, 0, 2 },
+                {  0, 4, 1, 3, 2 },
+                {  2, 3, 4, 1, 0 }
+            });
+            HashSet<int> irrelevant =
+                Manipulation.FindIrrelevantSimpsonCandidates(p,
+                p.GetVoter(0),
+                1,
+                0).IrrelevantCandidates;
+            Assert.AreEqual(1, irrelevant.Count);
+            Assert.IsTrue(irrelevant.Contains(4));
+        }
+
+        public void TestFindIrrelevantSimpsonCandidates2()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+            HashSet<int> irrelevant =
+                Manipulation.FindIrrelevantSimpsonCandidates(p,
+                p.GetVoter(0),
+                1,
+                0).IrrelevantCandidates;
+            Assert.AreEqual(4, irrelevant.Count);
+            Assert.IsTrue(irrelevant.Contains(1));
+            Assert.IsTrue(irrelevant.Contains(2));
+            Assert.IsTrue(irrelevant.Contains(3));
+        }
+
+        [TestMethod]
         public void TestFindIrrelevantCopelandCandidates()
         {
             Profile p = new Profile(new int[,] {
@@ -827,8 +866,7 @@ namespace Tests
                 Manipulation.FindIrrelevantCopelandCandidates(p,
                 p.GetVoter(0),
                 1,
-                0,
-                out dontBother);
+                0).IrrelevantCandidates;
             Assert.AreEqual(2, irrelevant.Count);
             Assert.IsTrue(irrelevant.Contains(2));
             Assert.IsTrue(irrelevant.Contains(4));
@@ -897,6 +935,40 @@ namespace Tests
             Assert.AreEqual(0.5, Manipulation.PossibleCopelandScoreDecrease(p, 2, prefs));
             Assert.AreEqual(0.5, Manipulation.PossibleCopelandScoreDecrease(p, 3, prefs));
             Assert.AreEqual(0, Manipulation.PossibleCopelandScoreDecrease(p, 4, prefs));
+        }
+
+        [TestMethod]
+        public void TestPossibleMaxMinDecrease()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreDecrease(p, 1, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreDecrease(p, 2, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreDecrease(p, 3, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreDecrease(p, 4, prefs));
+        }
+
+        [TestMethod]
+        public void TestPossibleMaxMinIncrease()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreIncrease(p, 1, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleMaxMinScoreIncrease(p, 2, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreIncrease(p, 3, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleMaxMinScoreIncrease(p, 4, prefs));
         }
 
         [TestMethod]
