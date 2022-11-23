@@ -126,6 +126,61 @@ namespace Tests
         }
 
         [TestMethod]
+        public void TestMaxMinScore()
+        {
+            var profile = new Profile(new int[,] {
+                { 4, 1, 2, 3, 0 },
+                { 1, 4, 2, 3, 0 },
+                { 3, 1, 4, 2, 0 },
+                { 0, 2, 3, 4, 1 },
+                {2, 0, 3, 1, 4 } });
+            Assert.AreEqual(1, profile.MaxMinScore(0));
+            Assert.AreEqual(2, profile.MaxMinScore(1));
+            Assert.AreEqual(2, profile.MaxMinScore(2));
+            Assert.AreEqual(1, profile.MaxMinScore(3));
+            Assert.AreEqual(2, profile.MaxMinScore(4));
+        }
+
+        [TestMethod]
+        public void TestSimpsonWinner()
+        {
+            var profile = new Profile(new int[,] {
+                { 4, 1, 2, 3, 0 },
+                { 1, 4, 2, 3, 0 },
+                { 3, 1, 4, 2, 0 },
+                { 0, 2, 3, 4, 1 },
+                {2, 0, 3, 1, 4 } });
+            Assert.AreEqual(1, VotingFunctions.FindUniqueSimpsonWinner(profile));
+        }
+
+        [TestMethod]
+        public void TestSimpsonWinner2()
+        {
+            var profile = new Profile(new int[,]
+            {
+                { 0, 1, 2 },
+                { 0, 1, 2 },
+                { 1, 2, 0 },
+            });
+            Assert.AreEqual(0, VotingFunctions.FindUniqueSimpsonWinner(profile));
+        }
+
+        [TestMethod]
+        public void TestMaxMinScore2()
+        {
+            var profile = new Profile(new int[,]
+            {
+                { 0, 1, 2 },
+                { 0, 1, 2 },
+                { 1, 2, 0 },
+            });
+            Assert.AreEqual(2, profile.MaxMinScore(0));
+            Assert.AreEqual(1, profile.MaxMinScore(1));
+            Assert.AreEqual(0, profile.MaxMinScore(2));
+
+        }
+
+        [TestMethod]
         public void CopelandScoresOdd()
         {
             var profile = new Profile(
@@ -760,17 +815,113 @@ namespace Tests
         [TestMethod]
         public void TestFindIrrelevantCopelandCandidates()
         {
-            Profile profile = new Profile(new int[,]
-            {
-                { 5, 0, 1, 2, 3, 4, 6 },
-                { 5, 2, 1, 3, 4, 0, 6 },
-                {5, 0, 4, 3, 1, 2, 6 },
-                { 5, 4, 3, 2, 1, 0, 6 },
+            Profile p = new Profile(new int[,] {
+                { 4, 2, 1, 3, 0 },
+                { 0, 1, 2, 3,4 },
+                {  3, 1, 4, 0, 2 },
+                {  0, 4, 1, 3, 2 },
+                {  2, 3, 4, 1, 0 }
             });
-            HashSet<int> irrelevant = Manipulation.FindIrrelevantCopelandCandidates(profile);
+            bool dontBother;
+            HashSet<int> irrelevant =
+                Manipulation.FindIrrelevantCopelandCandidates(p,
+                p.GetVoter(0),
+                1,
+                0,
+                out dontBother);
             Assert.AreEqual(2, irrelevant.Count);
-            Assert.IsTrue(irrelevant.Contains(5));
-            Assert.IsTrue(irrelevant.Contains(6));
+            Assert.IsTrue(irrelevant.Contains(2));
+            Assert.IsTrue(irrelevant.Contains(4));
+        }
+
+        [TestMethod]
+        public void TestPossibleCopelandIncreaseOdd()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(0, Manipulation.PossibleCopelandScoreIncrease(p, 1, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleCopelandScoreIncrease(p, 2, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleCopelandScoreIncrease(p, 3, prefs));
+            Assert.AreEqual(2, Manipulation.PossibleCopelandScoreIncrease(p, 4, prefs));
+        }
+
+        [TestMethod]
+        public void TestPossibleCopelandDecreaseOdd()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+                {  3, 1, 2, 4, 0 }
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(3, Manipulation.PossibleCopelandScoreDecrease(p, 1, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleCopelandScoreDecrease(p, 2, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleCopelandScoreDecrease(p, 3, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleCopelandScoreDecrease(p, 4, prefs));
+        }
+        [TestMethod]
+        public void TestPossibleCopelandIncreaseEven()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(0, Manipulation.PossibleCopelandScoreIncrease(p, 1, prefs));
+            Assert.AreEqual(0.5, Manipulation.PossibleCopelandScoreIncrease(p, 2, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleCopelandScoreIncrease(p, 3, prefs));
+            Assert.AreEqual(1, Manipulation.PossibleCopelandScoreIncrease(p, 4, prefs));
+        }
+
+        [TestMethod]
+        public void TestPossibleCopelandDecreaseEven()
+        {
+            Profile p = new Profile(new int[,] {
+                { 3, 2, 4, 0, 1 },
+                { 4, 3, 0, 2, 1 },
+                {  4, 3, 1, 0, 2 },
+                {  2, 0, 4, 3, 1 },
+            });
+            int[] prefs = p.GetVoter(0);
+            Assert.AreEqual(1.5, Manipulation.PossibleCopelandScoreDecrease(p, 1, prefs));
+            Assert.AreEqual(0.5, Manipulation.PossibleCopelandScoreDecrease(p, 2, prefs));
+            Assert.AreEqual(0.5, Manipulation.PossibleCopelandScoreDecrease(p, 3, prefs));
+            Assert.AreEqual(0, Manipulation.PossibleCopelandScoreDecrease(p, 4, prefs));
+        }
+
+        [TestMethod]
+        public void TestCopelandManipulation3GS()
+        {
+            TestCopelandManipulation3(Manipulation.ManipulationAlgorithm.GreedySearch);
+        }
+
+        [TestMethod]
+        public void TestCopelandManipulation3OG()
+        {
+            TestCopelandManipulation3(Manipulation.ManipulationAlgorithm.OptimisedGreedy);
+        }
+
+        private void TestCopelandManipulation3(Manipulation.ManipulationAlgorithm algo)
+        {
+            Profile p = new Profile(new int[,] {
+                { 4, 2, 1, 3, 0 },
+                { 0, 1, 2, 3,4 },
+                {  3, 1, 4, 0, 2 },
+                {  0, 4, 1, 3, 2 },
+                {  2, 3, 4, 1, 0 }
+            });
+            Assert.AreEqual(1, VotingFunctions.FindUniqueCopelandWinner(p));
+            Assert.AreEqual(1, Manipulation.OptimalCopelandOutcome(p, 0, algo));
         }
 
         [TestMethod]

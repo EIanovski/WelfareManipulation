@@ -313,7 +313,22 @@ namespace WelfareManipulation
 			return new Profile(profile);
 		}
 
-		public static Profile GenerateEuclideanProfile(int numberOfAgents, int numberOfCandidates, int dimension)
+        public double MaxMinScore(int candidate)
+        {
+            double score = NumberOfVoters;
+            foreach (int otherCandidate in Candidates)
+            {
+                if (otherCandidate != candidate)
+                {
+                    if (HowManyPrefer(candidate, otherCandidate) < score)
+                    {
+                        score = HowManyPrefer(candidate, otherCandidate);
+                    }
+                }
+            }
+            return score;
+        }
+        public static Profile GenerateEuclideanProfile(int numberOfAgents, int numberOfCandidates, int dimension)
 		{
 			List<Point> agents = GenerateIdealPoints(numberOfAgents, dimension);
 			List<Point> candidatePoints = GenerateIdealPoints(numberOfCandidates, dimension);

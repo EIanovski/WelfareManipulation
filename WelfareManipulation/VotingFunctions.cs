@@ -136,14 +136,30 @@ namespace WelfareManipulation
 			return WinnerFromScoringDict(FindScoringRuleScores(profile, scoringVector));
 		}
 
-		public static Dictionary<int, double> FindCopelandScores(Profile profile)
-		{
-			var scores = new Dictionary<int, double>();
+        public static Dictionary<int, double> FindCopelandScores(Profile profile)
+        {
+            return FindScores(
+                profile,
+                (p, c) => p.CopelandScore(c));
+        }
+
+        public static Dictionary<int, double> FindMaxMinScores(Profile profile)
+        {
+            return FindScores(
+                profile,
+                (p, c) => p.MaxMinScore(c));
+        }
+
+        private static Dictionary<int, double> FindScores(
+            Profile profile,
+            Func<Profile, int, double> scoreFunction)
+        {
+            var scores = new Dictionary<int, double>();
             foreach (int candidate in profile.Candidates)
             {
-                scores[candidate] = profile.CopelandScore(candidate);
+                scores[candidate] = scoreFunction(profile, candidate);
             }
-			return scores;
+            return scores;
         }
 
         public static double FindScoringRuleScoreOfCandidate(
@@ -170,6 +186,11 @@ namespace WelfareManipulation
                 score += scoringVector[profile.VoterIRanks(voter, candidate)];
             }
             return score;
+        }
+
+        internal static int FindUniqueSimpsonWinner(Profile profile)
+        {
+            return WinnerFromScoringDict(FindMaxMinScores(profile));
         }
 
         public static Dictionary<int, double> FindScoringRuleScores(Profile profile, double[] scoringVector)

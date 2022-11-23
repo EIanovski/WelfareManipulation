@@ -22,8 +22,8 @@ namespace WelfareManipulation
 			 * value within a range. Here you uncomment the parameter to fix, enter the value
 			 * to fix it at, and the range in which to vary the other parameter.
 			 */
-			Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Candidates;
-			//Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Voters;
+			//Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Candidates;
+			Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Voters;
 			int numberOfFixedAxis = 10;
 			IEnumerable<int> variableAxisRange = Enumerable.Range(3, 98);
 
@@ -101,6 +101,7 @@ namespace WelfareManipulation
 
 			foreach (StatisticalCulture culture in cultures)
 			{
+				Console.WriteLine(culture.Name);
                 foreach (VotingFunctions.VotingRule rule in votingFunctions)
                 {
                     Dictionary<int, double>[] results =

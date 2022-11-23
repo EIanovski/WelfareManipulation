@@ -335,56 +335,136 @@ namespace WelfareManipulation
             throw new Exception("Algorithm not implemented");
         }
 
-        internal static HashSet<int> FindIrrelevantCopelandCandidates(Profile profile)
+        internal static HashSet<int> FindIrrelevantCopelandCandidates(
+            Profile profile,
+            int[] strategicVote,
+            int badCandidateIndex,
+            int manipulator,
+            out bool dontBother)
         {
-            HashSet<int> candidates = new HashSet<int>(profile.Candidates);
-            foreach (int candidate in profile.Candidates)
+            int[] sincerePreferences = profile.GetVoter(manipulator);
+            profile.SetVoter(manipulator, strategicVote);
+            dontBother = false;
+            HashSet<int> irrelevantCandidates = new HashSet<int>(profile.Candidates);
+            double preferredWinnerScore = profile.CopelandScore(strategicVote[0]);
+            for (int i = badCandidateIndex; i < profile.NumberOfCandidates; i++)
             {
-                if (IsRelevantCopelandCandidate(candidate, profile))
+                int badCandidate = strategicVote[i];
+                double badCandidateScore = profile.CopelandScore(badCandidate);
+                if (badCandidateScore - PossibleCopelandScoreDecrease(
+                    profile,
+                    i,
+                    strategicVote) > preferredWinnerScore)
                 {
-                    candidates.Remove(candidate);
+                    dontBother = true;
+                    break;
                 }
+                if (badCandidateScore + PossibleCopelandScoreIncrease(
+                    profile,
+                    i,
+                    strategicVote) >= preferredWinnerScore)
+                {
+                    irrelevantCandidates.Remove(badCandidate);
+                }
+
             }
-            return candidates;
+            profile.SetVoter(manipulator, sincerePreferences);
+            return irrelevantCandidates;
         }
 
-        private static bool IsRelevantCopelandCandidate(int candidate, Profile profile)
+        internal static double PossibleCopelandScoreDecrease(
+            Profile profile,
+            int candidateIndex,
+            int[] strategicVote)
         {
             double halfVoters = profile.NumberOfVoters / 2.0;
-            foreach (int otherCandidate in profile.Candidates)
+            double possibleDecrease = 0;
+            int candidate = strategicVote[candidateIndex];
+            for (int i = candidateIndex + 1; i < profile.NumberOfCandidates; i++)
             {
-                if (otherCandidate == candidate)
+                int otherCandidate = strategicVote[i];
+                if (profile.HowManyPrefer(candidate, otherCandidate) == halfVoters
+                    || profile.HowManyPrefer(candidate, otherCandidate) == halfVoters + 1)
                 {
-                    continue;
+                    possibleDecrease += 0.5;
                 }
-                // possible further optimisation by using manipulator's prefs
-                if (profile.HowManyPrefer(candidate, otherCandidate) <= halfVoters + 1
-                    && profile.HowManyPrefer(candidate, otherCandidate) >= halfVoters - 1)
+                if (profile.HowManyPrefer(candidate, otherCandidate) > halfVoters
+                    && profile.HowManyPrefer(candidate, otherCandidate) < halfVoters + 1)
                 {
-                    return true;
+                    possibleDecrease++;
                 }
             }
-            return false;
+            return possibleDecrease;
         }
 
+        internal static double PossibleCopelandScoreIncrease(
+            Profile profile,
+            int candidateIndex,
+            int[] strategicVote)
+        {
+            double halfVoters = profile.NumberOfVoters / 2.0;
+            double possibleIncrease = 0;
+            int candidate = strategicVote[candidateIndex];
+            for (int i = candidateIndex - 1; i > 0; i--)
+            {
+                int otherCandidate = strategicVote[i];
+                if (profile.HowManyPrefer(candidate, otherCandidate) == halfVoters
+                    || profile.HowManyPrefer(candidate, otherCandidate) == halfVoters - 1)
+                {
+                    possibleIncrease += 0.5;
+                }
+                if (profile.HowManyPrefer(candidate, otherCandidate) < halfVoters
+                    && profile.HowManyPrefer(candidate, otherCandidate) > halfVoters - 1)
+                {
+                    possibleIncrease++;
+                }
+            }
+            return possibleIncrease;
+        }
+
+
         private static int OptimisedCopelandGreedySearch(
-           Profile profile,
-           int manipulator = 0)
+            Profile profile,
+            int manipulator = 0)
         {
             int[] sincerePrefs = profile.GetVoter(manipulator);
-            var remainingCandidates = new HashSet<int>(profile.Candidates);
+
             int[] strategicVote = new int[profile.NumberOfCandidates];
-            
-            for (int i=0; i<profile.NumberOfCandidates; i++)
+
+            for (int i = 0; i < profile.NumberOfCandidates; i++)
             {
                 sincerePrefs.CopyTo(strategicVote, 0);
                 int bestChoice = sincerePrefs[i];
                 strategicVote[i] = strategicVote[0];
                 strategicVote[0] = bestChoice;
-                remainingCandidates.Remove(bestChoice);
-                int winner = GreedySearch(profile, 
+                bool dontBother;
+                HashSet<int> irrelevantCandidates =
+                    FindIrrelevantCopelandCandidates(
+                        profile,
+                        strategicVote,
+                        i + 1,
+                        manipulator,
+                        out dontBother);
+                if (dontBother)
+                {
+                    continue;
+                }
+                var remainingCandidates = new HashSet<int>(profile.Candidates);
+                remainingCandidates.ExceptWith(irrelevantCandidates);
+                irrelevantCandidates.Remove(bestChoice);
+                int j = 1;
+                foreach (int irrelevantCandidate in irrelevantCandidates)
+                {
+                    strategicVote[j] = irrelevantCandidate;
+                    j++;
+                }
+                int winner = GreedySearch(
+                    profile,
                     (p, candidate) => p.CopelandScore(candidate),
-                    new HashSet<int>(remainingCandidates), strategicVote, i+1, manipulator);
+                    new HashSet<int>(remainingCandidates),
+                    strategicVote,
+                    j,
+                    manipulator);
                 if (winner != INVALID_WINNER)
                 {
                     return winner;
@@ -392,7 +472,6 @@ namespace WelfareManipulation
             }
             throw new Exception("The code was unable to find any winner. This should never happen, since the sincere winner should win in the original profile.");
         }
-
 
 
         public static int OptimalScoringRuleOutcome(
