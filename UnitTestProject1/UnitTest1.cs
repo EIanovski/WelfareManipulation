@@ -77,7 +77,56 @@ namespace Tests
     [TestClass]
     public class CondorcetTests
     {
-        [TestMethod]
+		[TestMethod]
+		public void SimpleCycle()
+		{
+			var profile = new Profile(new int[,] { { 0, 1, 2 }, { 1, 2, 0 }, { 2, 0, 1 } });
+			Assert.IsFalse(profile.HasCondorcetWinner());
+		}
+
+		[TestMethod]
+		public void SimpleMajority()
+		{
+			var profile = new Profile(new int[,]
+			{
+				{ 0, 1, 2 },
+				{ 0, 1, 2 },
+				{ 0, 1, 2 },
+				{ 1, 2, 0 },
+				{ 2, 0, 1 }
+			});
+			Assert.IsTrue(profile.HasCondorcetWinner());
+		}
+
+		[TestMethod]
+		public void TestIsCondorcetSimpleCycle()
+		{
+			var profile = new Profile(new int[,] {
+				{ 0, 1, 2 },
+				{ 1, 2, 0 },
+				{ 2, 0, 1 } });
+			Assert.IsFalse(profile.IsCondorcetWinner(0));
+			Assert.IsFalse(profile.IsCondorcetWinner(1));
+			Assert.IsFalse(profile.IsCondorcetWinner(2));
+		}
+
+		[TestMethod]
+		public void TestIsCondorcetSimpleMajority()
+		{
+			var profile = new Profile(new int[,]
+			{
+				{ 0, 1, 2 },
+				{ 0, 1, 2 },
+				{ 0, 1, 2 },
+				{ 1, 2, 0 },
+				{ 2, 0, 1 }
+			});
+			Assert.IsTrue(profile.IsCondorcetWinner(0));
+			Assert.IsFalse(profile.IsCondorcetWinner(1));
+			Assert.IsFalse(profile.IsCondorcetWinner(2));
+		}
+
+		[TestMethod]
         public void TestCopelandNoTies()
         {
             var profile = new Profile(

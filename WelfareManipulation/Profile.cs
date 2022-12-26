@@ -71,6 +71,23 @@ namespace WelfareManipulation
             }
         }
 
+		public bool HasCondorcetWinner()
+		{
+			foreach (int candidate in Candidates)
+			{
+				if (CopelandScore(candidate) == NumberOfCandidates - 1)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public bool IsCondorcetWinner(int candidate)
+		{
+			return CopelandScore(candidate) == NumberOfCandidates - 1;
+		}
+
 		private void UpdateTournamentMatrix(int voter, IEnumerable<int> newPrefs)
 		{
 			AddOrRemoveTournamentMatrixEntry(voter);
