@@ -38,8 +38,9 @@ namespace WelfareManipulation
 			UtilityMeasure[] utilities = new UtilityMeasure[] {
                 UtilityMeasure.BordaUtility,
                 UtilityMeasure.RawlsUtility,
-                UtilityMeasure.NashUtility
-            };
+                UtilityMeasure.NashUtility,
+				UtilityMeasure.CondorcetUtility
+			};
 
 			/*
 			 * Uncomment the culture you want to draw profiles from. 

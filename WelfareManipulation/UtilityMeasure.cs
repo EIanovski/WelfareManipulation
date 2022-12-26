@@ -17,8 +17,11 @@ namespace WelfareManipulation
         public static UtilityMeasure NashUtility =
             new UtilityMeasure("Nash_utility",
                 (profile, winner) => profile.NormalisedNashUtility(winner));
+		public static UtilityMeasure CondorcetUtility =
+			new UtilityMeasure("Condorcet_utility",
+				(profile, winner) => profile.IsCondorcetWinner(winner) ? 100 : 0);
 
-        public string Name;
+		public string Name;
 
 		public Func<Profile, int, double> UtilityFunction;
 
