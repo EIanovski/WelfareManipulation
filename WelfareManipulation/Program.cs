@@ -24,7 +24,7 @@ namespace WelfareManipulation
 			 */
 			//Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Candidates;
 			Simulations.AxisNames fixedAxisName = Simulations.AxisNames.Voters;
-			int numberOfFixedAxis = 10;
+			int numberOfFixedAxis = 11;
 			IEnumerable<int> variableAxisRange = Enumerable.Range(3, 98);
 
 			/*
@@ -39,28 +39,32 @@ namespace WelfareManipulation
                 UtilityMeasure.BordaUtility,
                 UtilityMeasure.RawlsUtility,
                 UtilityMeasure.NashUtility,
-				UtilityMeasure.CondorcetUtility
+				//UtilityMeasure.CondorcetUtility
 			};
 
 			/*
-			 * Uncomment the culture you want to draw profiles from. 
+			 * Comment out the cultures you are not interested in. 
 			 * MallowsSushi is only well defined for 10 candidates.
 			 * SkatingBag is only well defined for 30 candidates.
 			 */
-			//StatisticalCulture culture = StatisticalCulture.ImpartialCulture;
-			//StatisticalCulture culture = StatisticalCulture.EuclideanOne;
-			//StatisticalCulture culture = StatisticalCulture.EuclideanTwo;
-			//StatisticalCulture culture = StatisticalCulture.EuclideanFive;
-			//StatisticalCulture culture = StatisticalCulture.MallowsPointFive;
-			//StatisticalCulture culture = StatisticalCulture.MallowsPointEight;
-			//StatisticalCulture culture = StatisticalCulture.MixedMallowsTwo;
-			//StatisticalCulture culture = StatisticalCulture.MallowsSushi;
-			//StatisticalCulture culture = StatisticalCulture.SkatingBag;
+			StatisticalCulture[] cultures = new StatisticalCulture[]
+			{
+                /*StatisticalCulture.ImpartialCulture,
+				StatisticalCulture.EuclideanOne,
+				StatisticalCulture.EuclideanTwo,
+				StatisticalCulture.EuclideanFive,*/
+				StatisticalCulture.MallowsPointEight,
+				StatisticalCulture.MallowsPointFive,
+				StatisticalCulture.MixedMallowsTwo,
+                //StatisticalCulture.MallowsSushi,
+                //StatisticalCulture.SkatingBag
+            };
+
 			/*
 			 * Comment out the voting functions you are not interested in.
 			 */
 			VotingFunctions.VotingRule[] votingFunctions = {
-				/*BordaSincere, BordaManip,
+				BordaSincere, BordaManip,
 				PluralitySincere, PluralityManip,
 				Geometric0p5Sincere, Geometric0p5Manip,
 				Geometric0p65Sincere, Geometric0p65Manip,
@@ -77,9 +81,10 @@ namespace WelfareManipulation
 				NashSincere, NashManip,
 				GenAntipSincere, GenAntipManip,
 				GenPlurSincere, GenPlurManip,
-                VetoSincere, VetoManip,*/
-				CopelandSincere, CopelandManip
-            };
+                VetoSincere, VetoManip,
+				CopelandSincere, CopelandManip,
+				SimpsonSincere, SimpsonManip,
+			};
 
 			/*
 			 * By default, results are stored in .\results
@@ -87,18 +92,7 @@ namespace WelfareManipulation
 			System.IO.Directory.CreateDirectory("results");
 			string[] fileNames;
 
-			StatisticalCulture[] cultures = new StatisticalCulture[]
-			{
-                StatisticalCulture.ImpartialCulture,
-				StatisticalCulture.EuclideanOne,
-				StatisticalCulture.EuclideanTwo,
-				StatisticalCulture.EuclideanFive,
-				StatisticalCulture.MallowsPointEight,
-				StatisticalCulture.MallowsPointFive,
-				StatisticalCulture.MixedMallowsTwo,
-                //StatisticalCulture.MallowsSushi,
-                //StatisticalCulture.SkatingBag
-            };
+			
 
 			foreach (StatisticalCulture culture in cultures)
 			{
@@ -143,14 +137,6 @@ namespace WelfareManipulation
         public static VotingFunctions.VotingRule SimpsonManip = new VotingFunctions.VotingRule(
             "SimpsonManip",
             profile => Manipulation.OptimalSimpsonOutcome(profile));
-
-        /*public static VotingFunctions.VotingRule SeqMajSincere = new VotingFunctions.VotingRule(
-            "SeqMajSincere",
-            profile => VotingFunctions.FindSequentialMajorityWinner(profile));
-
-        public static VotingFunctions.VotingRule SeqMajManip = new VotingFunctions.VotingRule(
-            "SeqMajManip",
-            profile => Manipulation.OptimalSequentialMajorityOutcome(profile));*/
 
         public static VotingFunctions.VotingRule BordaSincere = new VotingFunctions.VotingRule(
 			"BordaSincere",
